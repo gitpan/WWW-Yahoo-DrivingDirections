@@ -4,3 +4,5 @@ Revision history for Perl extension Yahoo::DrivingDirections
 	- original version; created by h2xs 1.22 with options
 		-AX -n Yahoo::DrivingDirections
 
+0.02  Wed Sep 22 19:55:00 2004
+	- Uploaded code with old function name: get_directions instead of get_dirs.  Added get_dirs; get_directions now just calls get_dirs.  Changed Makefile.PL to require version 0 of each dependency, not version "undef".

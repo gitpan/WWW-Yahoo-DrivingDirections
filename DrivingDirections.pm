@@ -6,9 +6,9 @@ use warnings;
 
 require Exporter;
 
-our @EXPORT_OK = qw/get_directions/;
+our @EXPORT_OK = qw/get_dirs get_directions/;
 our @ISA = qw/Exporter/;
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use Carp;
 use List::Util qw/shuffle sum/;
@@ -219,6 +219,10 @@ sub leg_dist {
 }
 
 sub get_directions {
+    return get_dirs ( @_ );
+}
+
+sub get_dirs {
     my $yd = WWW::Yahoo::DrivingDirections->new ( @_ );
     $yd->get_maps();
     return $yd->total_distance ();
@@ -377,17 +381,23 @@ depending on the settings of the return_html and save_html flags.
 
 =over 4
 
-=item B<get_directions>
+=item B<get_dirs>
 
 A functional interface to the module.  All arguments are passed to
 WWW::Yahoo::DrivingDirections::new, and get_maps is run on the resultant
 object.
 
+=over 4
+
+=item B<get_directions>
+
+Identical to get_dirs.
+
 =back
 
 =head1 EXPORT
 
-get_directions.
+The (identical) functions get_dirs and get_directions are exported on request.
 
 =head1 AUTHOR
 
@@ -395,7 +405,7 @@ Kester Allen, kester@gmail.com
 
 =head1 VERSION
 
-0.01
+0.02
 
 =head1 SEE ALSO
 
