@@ -8,7 +8,7 @@ require Exporter;
 
 our @EXPORT_OK = qw/get_dirs get_directions/;
 our @ISA = qw/Exporter/;
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 use Carp;
 use List::Util qw/shuffle sum/;
@@ -258,7 +258,7 @@ __END__
 
 =head1 NAME
 
-WWW::Yahoo::DrivingDirections-- Generate driving directions for multiple-stop
+WWW::Yahoo::DrivingDirections - Generate driving directions for multiple-stop
 trips in the United States, courtesy of maps.yahoo.com.
 
 =head1 ABSTRACT

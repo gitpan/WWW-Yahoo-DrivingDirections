@@ -1,5 +1,8 @@
 Revision history for Perl extension WWW::Yahoo::DrivingDirections
 
+0.06  Tue Nov 1 09:15:11 2004
+	- REALLY added space before hyphen in NAME section.  Oy.
+
 0.05  Tue Nov 1 08:15:11 2004
 	- Added space before hyphen in NAME section (was messing up CPAN indexing).
 
