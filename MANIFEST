@@ -4,4 +4,11 @@ MANIFEST
 DrivingDirections.pm
 README
 t/1.t
+t/2.t
+t/test_0_1.html
+t/test_0_2.html
+t/test_0_3.html
+t/test_1_1.html
+t/test_2_1.html
+t/test_2_2.html
 META.yml                                 Module meta-data (added by MakeMaker)

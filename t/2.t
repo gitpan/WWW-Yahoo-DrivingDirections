@@ -21,12 +21,32 @@ my @list = (
     [ { roundtrip => 1 }, 'boston, ma', 'oakland, ca'],
 );
 
-foreach my $place ( @list ) {
+foreach $iList ( 0 .. scalar @list - 1 ) {
+    my $place = $list[$iList];
     get_dirs ( { save_format => $fmt }, @$place );
 
     foreach ( 1 .. scalar @$place - 1 ) {
+        my $test_fname = sprintf "t/test_%d_%d.html", $iList, $_;
         my $fname = sprintf $fmt, $_;
-        ok ( -f $fname );
+
+        my $test_file = read_file ( $test_fname );
+        my $comp_file = read_file ( $fname );
+
+        is ( $test_file, $comp_file );
         unlink $fname;
     }
+}
+
+sub read_file { 
+    my ( $fname ) = @_;
+    my $content;
+
+    open my $fh, $fname or die "can't open $fname: $!\n";
+    while ( <fh> ) {
+        $content .= $_
+            if /\w{3} \w{3} \d{2} \d{2}:\d{2}:\d{2} \w{3} \d{4}/;
+    }
+    close $fh;
+
+    return $content;
 }
