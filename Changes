@@ -1,4 +1,7 @@
-Revision history for Perl extension Yahoo::DrivingDirections
+Revision history for Perl extension WWW::Yahoo::DrivingDirections
+
+0.04  Fri Oct 1 20:24:31 2004
+	- Fixed module name in the first line of this doc.  Oops!
 
 0.03  Fri Oct 1 20:24:31 2004
 	- Added method number_of_stops, to replace stops_number.  The name "stops_number" is terrible and confusing.  Added a few comments, made cosmetic changes to bad_address function. 

@@ -8,7 +8,7 @@ require Exporter;
 
 our @EXPORT_OK = qw/get_dirs get_directions/;
 our @ISA = qw/Exporter/;
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use Carp;
 use List::Util qw/shuffle sum/;
@@ -434,7 +434,7 @@ Kester Allen, kester@gmail.com
 
 =head1 VERSION
 
-0.03
+0.04
 
 =head1 SEE ALSO
 
