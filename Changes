@@ -1,8 +1,11 @@
 Revision history for Perl extension Yahoo::DrivingDirections
 
-0.01  Thu Sep  9 20:45:01 2004
-	- original version; created by h2xs 1.22 with options
-		-AX -n Yahoo::DrivingDirections
+0.03  Fri Oct 1 20:24:31 2004
+	- Added method number_of_stops, to replace stops_number.  The name "stops_number" is terrible and confusing.  Added a few comments, made cosmetic changes to bad_address function. 
 
 0.02  Wed Sep 22 19:55:00 2004
 	- Uploaded code with old function name: get_directions instead of get_dirs.  Added get_dirs; get_directions now just calls get_dirs.  Changed Makefile.PL to require version 0 of each dependency, not version "undef".
+
+0.01  Thu Sep  9 20:45:01 2004
+	- original version; created by h2xs 1.22 with options
+		-AX -n Yahoo::DrivingDirections

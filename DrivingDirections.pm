@@ -8,7 +8,7 @@ require Exporter;
 
 our @EXPORT_OK = qw/get_dirs get_directions/;
 our @ISA = qw/Exporter/;
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use Carp;
 use List::Util qw/shuffle sum/;
@@ -45,6 +45,9 @@ sub new {
         elsif ( '' eq ref $arg ) {
             $self->add_stops ( $arg );
         }
+        else {
+            carp "Ignoring argument $arg: not a hashref or scalar";
+        }
     }
     return $self;
 }
@@ -71,10 +74,14 @@ sub clear_stops {
 }
 
 sub total_distance {
-    my $self = shift () or die "no self in _process_stops";
+    my $self = shift () or die "no self in total_distance";
     return $self->{total_dist};
 }
 
+sub number_of_stops {
+    my $self = shift () or die "no self in number_of_stops";
+    return $self->stops_number ();
+}
 sub stops_number {
     my $self = shift () or die "no self in stops_number";
     $self->{cStops} = scalar @{$self->{stops}};
@@ -102,9 +109,12 @@ sub get_maps {
         my $leg = $self->get_trip_leg_page ( $_ );
         my $bGood = $leg =~ m/distance:/i &&
                     $leg =~ m/approximate travel time:/i;
-        do { carp "Skipping $_ $self->{stops}[$_] to $self->{stops}[$_+1] " .
-                  "trip: maps.yahoo.com cannot find";
-             next; } if ! $bGood;
+
+        if ( ! $bGood ) {
+            carp "Skipping leg $_: $self->{stops}[$_] to $self->{stops}[$_+1]" .
+                 " trip: maps.yahoo.com cannot find";
+            next;
+        }
         push @{$self->{trip_legs}}, $leg;
     }
 
@@ -112,18 +122,21 @@ sub get_maps {
     #
     $self->{total_dist} = sum ( map { leg_dist( $_ ) } @{$self->{trip_legs}} );
 
+    # Warn if the return_html and save_html params make get_maps a no-op:
+    #
     carp "Both return_html and save_html are false"
         if !$self->{return_html} && !$self->{save_html};
 
-    # Write them to their output file:
+    # Write the trip legs to their output html files, if requested:
     #
-    foreach ( 0 .. scalar @{$self->{trip_legs}} - 1 ) {
-        if ( $self->{save_html} ) {
+    if ( $self->{save_html} ) {
+        foreach ( 0 .. scalar @{$self->{trip_legs}} - 1 ) {
             my $fname = sprintf "$self->{save_format}", $_+1;
             open ( my $out_fh, '>', $fname )
                 or die "Can't open file '$fname': $!";
             print $out_fh $self->{trip_legs}[$_];
-            close $out_fh;
+            close $out_fh 
+                or carp "problem closing '$fname': $!";
         }
     }
     return $self->{trip_legs}
@@ -132,9 +145,17 @@ sub get_maps {
 
 sub _process_stops {
     my $self = shift () or die "no self in _process_stops";
+
+    # Clean the proc_stops array:
+    # 
     $self->{proc_stops} = [];
+
     foreach ( @{$self->{stops}} ) {
+
+        # Get rid of multiple sequencial commas
+        #
         s/,+/,/g;
+
         # Count commas, split the line into an anonymous array w/ $count elems
         #
         my $count = () = m/,/g;
@@ -166,10 +187,11 @@ sub _process_stops {
 
         # Clean up the spaces:
         #
-        foreach ( @addr ) { 
-            s/^\s+|\s+$//g;
-            s/\s+/ /g;
-        }
+        do { s/^\s+|\s+$//g; s/\s+/ /g } foreach @addr;
+
+        # Push a ref to the properly-formatted address onto the proc_stops
+        #   array  (get_maps works on the proc_stops array).
+        #
         push @{$self->{proc_stops}}, [ @addr ];
     }
 }
@@ -193,22 +215,25 @@ sub get_trip_leg_page {
             tcsz  => $self->{proc_stops}[$idx2][1],
         },
     );
-    die "Form submission failure: $!" if not $self->{mech}->success ();
+    croak "Form submission failure: $!" 
+        if not $self->{mech}->success ();
     return $resp->{_content}
 }
 
 # Functions.
 #
 sub bad_address {
-    my $bad = shift () or croak "no address in WWW::Yahoo::DrivingDirections::bad_address";
+    my $bad = shift () 
+        or croak "no address in WWW::Yahoo::DrivingDirections::bad_address";
 
-    croak qq/Error: entry '$bad' is invalid.  Valid addresses are in these formats: \n/ .
-          qq/\t"123 fake st, anytown, az" (street adddress, city, state)            \n/ .
-          qq/\t"123 fake st, anytown, az 87530" (street adddress, city, state zip)  \n/ .
-          qq/\t"Boston, ma" (city, state)                                           \n/ .
-          qq/\t"Boston, ma 02138" (city, state)                                     \n/ .
-          qq/\t"90210" (zip only)                                                   \n/ .
-          qq/\t"LAX" (three letter airport code)                                    \n/;
+    croak join "\n\t",
+        "Error: invalid entry '$bad'.  Valid addresses are in these formats:",
+        "'123 fake st, anytown, az' (street adddress, city, state)",
+        "'123 fake st, anytown, az 87530' (street adddress, city, state zip)",
+        "'Boston, ma' (city, state)",
+        "'Boston, ma 02138' (city, state)",
+        "'90210' (zip only)",
+        "'LAX' (three letter airport code)\n";
 }
 
 sub leg_dist {
@@ -221,7 +246,6 @@ sub leg_dist {
 sub get_directions {
     return get_dirs ( @_ );
 }
-
 sub get_dirs {
     my $yd = WWW::Yahoo::DrivingDirections->new ( @_ );
     $yd->get_maps();
@@ -290,7 +314,7 @@ and the directions will be saved in trip_leg_1.html and trip_leg_2.html.
 Creates a new WWW::Yahoo::DrivingDirections instance.  A list of string
 arguments containing stops will be added to the object's list of destinations.
 A hash reference argument to this function with some or all of the following
-arguments is allowed:
+keys is allowed:
 
 =over 8
 
@@ -301,23 +325,24 @@ generated.  The default is false.
 
 =item I<return_html>
 
-A boolean.  If true, the get_maps method returns a reference an array of the
-the html driving direction pages.  If false, the get_maps method returns
-nothing.  The default is 0.
+A boolean.  If true, the get_maps method returns a reference to an array of 
+the the html driving direction pages.  If false, the get_maps method returns
+nothing.  The default is false.
 
 =item I<save_html>
 
 A boolean.  If true, the get_maps method writes the html driving direction
-pages to files with names defined by save_format parameter.  The default is 1.
-Setting both return_html and save_html to 0 makes get_maps a null-op, and is
-not reccomended.
+pages to files with names defined by save_format parameter.  The default is 
+true.  Setting both return_html and save_html to 0 makes get_maps a null-op, 
+and is not reccomended.
 
 =item I<save_format>
 
 A printf format string defining the filenames that the driving directions
-are saved to (if save_html is true).  The default is 'trip_leg_%d.html'.  There
-must be a %d in the string to take the trip leg number.  Example:  if there are
-two trip legs, trip_leg_1.html and trip_leg_2.html will be the output files.
+are saved to if save_html is true.  The default is 'trip_leg_%d.html'.  There
+must be one %d one %s in the string to take the trip leg number.  Example:  if 
+there are two trip legs, trip_leg_1.html and trip_leg_2.html will be the output
+files.
 
 =item I<mech>
 
@@ -328,8 +353,8 @@ WWW::Mechanize object can be supplied.
 
 =item B<add_stops>
 
-Add stops to the object's list of driving destinations.  The are appended onto
-the end of the list.  Returns the current number of stops.
+Add stops to the object's list of driving destinations.  The are pushed onto
+the list.  Returns the current number of stops.
 
 Allowed address formats are the following:
 
@@ -359,9 +384,13 @@ Clears the list of stops (presumably in order to do another trip).
 Returns the summed distance of all the trip legs.  Returns 0 if run before
 get_maps.  
 
-=item B<stops_number>
+=item B<number_of_stops>
 
 Returns the current number of stops.
+
+=item B<stops_number>
+
+Identical to number_of_stops.
 
 =item B<roundtrip>
 
@@ -405,7 +434,7 @@ Kester Allen, kester@gmail.com
 
 =head1 VERSION
 
-0.02
+0.03
 
 =head1 SEE ALSO
 

@@ -1,9 +1,11 @@
-Yahoo/DrivingDirections version 0.01
+Yahoo/DrivingDirections version 0.03
 ===========================
 
-WWW::Yahoo::DrivingDirections: a module that uses maps.yahoo.com to determine
+WWW::Yahoo::DrivingDirections: a module that uses maps.yahoo.com to generate
 driving directions for a multiple stop trip (e.g., a drive from SFO airport to
-35 Broadway Ave, Oakland, CA to the center of zip code 90210-0001).
+35 Broadway Ave, Oakland, CA to the center of zip code 90210-0001).  Can also
+be used to generate driving directions for a simple one-leg trip (point A to 
+point B).
 
 INSTALLATION
 
