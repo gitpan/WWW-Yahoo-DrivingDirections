@@ -424,6 +424,8 @@ Identical to get_dirs.
 
 =back
 
+=back
+
 =head1 EXPORT
 
 The (identical) functions get_dirs and get_directions are exported on request.
